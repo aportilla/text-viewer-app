@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <!-- The dev desktop (dev/main.ts): a bare desktop as SystemOnline's is, with
+       the SDK's Finder and the Text Viewer from its source. Nothing here goes
+       into the app file. -->
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Text Viewer</title>
+    <!-- The page's side, which the kit and the SDK leave to the host: black
+         behind the desktop, which the shell fits to the viewport, and a
+         clipped popup menu kept clear of the 20px menu bar. -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+      }
+      :root {
+        --vf-popup-inset-top: 24px;
+      }
+    </style>
+    <script type="module" src="/dev/main.ts"></script>
+  </head>
+  <body>
+    <vf-desktop id="desktop" bezel="10">
+      <!-- The shell puts the front application's menus after the Apple
+           menu. -->
+      <vf-menu-bar>
+        <vf-menu label="Apple">
+          <vf-img slot="label" width="16" height="16">
+            <img src="/dev/art/apple.png" alt="" />
+          </vf-img>
+        </vf-menu>
+      </vf-menu-bar>
+      <!-- The Finder renders the desktop's icons into it. -->
+      <vf-icon-field label="Desktop" fill-width fill-height></vf-icon-field>
+    </vf-desktop>
+  </body>
+</html>

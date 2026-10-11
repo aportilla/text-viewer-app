@@ -1,0 +1,28 @@
+{
+  "name": "text-viewer-app",
+  "description": "The Text Viewer, the read-me application for SystemOnline, built as its app file",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "author": "Adam Portilla",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aportilla/text-viewer-app.git"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.0",
+    "system-online-sdk": "^0.1.0",
+    "typescript": "^5.9.3",
+    "vintage-frames": "^0.20.0",
+    "vite": "^8.2.1"
+  }
+}

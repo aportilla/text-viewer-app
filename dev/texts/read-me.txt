@@ -1,0 +1,33 @@
+This is the Text Viewer's dev desktop: the SDK's Finder, and the Text Viewer from its source in src/. Nothing here goes into the app file.
+
+––––––––––––––––––––––––––––––––––
+THE TEXT FILES
+
+  READ ME
+  This file. Its words aren't in the file: it names a built-in by its key, and the dev desktop hands the Text Viewer its built-in texts (dev/texts/) as a site hands it its own.
+
+  LINE BREAKS
+  A text file with words of its own: its line breaks kept, its long lines wrapped at the window, and a run too long for any line broken where the window's edge falls.
+
+  MISSING TEXT
+  A built-in the dev desktop doesn't ship. Opening it says it can't be opened.
+
+––––––––––––––––––––––––––––––––––
+WHAT TO TRY
+
+Double-click a text file: its window opens out of its icon, and File → Close, ⌃W, closes it back into it.
+
+The zoom box toggles a reading column, at most 520 wide. Resize a window and its text wraps to the new width.
+
+Select some text and choose Edit → Copy, ⌘C. Copy is greyed until a text window holds a selection, so ⌘C stays the browser's. Edit → Select All, ⌘A, selects the front window's text.
+
+File → Quit, ⌃Q, closes every text window, as an Option-click on a close box does.
+
+Rename a text file and its window's title follows. Drag it to the Trash and choose Special → Empty Trash…, and its window closes.
+
+View → Arrange Windows, ⌘J, puts the windows back where they open.
+
+––––––––––––––––––––––––––––––––––
+SAVING
+
+A reload starts over. With ?save=1 in the address, the files and their places are kept in IndexedDB and the session in localStorage, so a reload reopens the windows that were open.

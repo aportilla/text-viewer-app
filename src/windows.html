@@ -1,0 +1,27 @@
+<!-- Text Viewer window, copied for each open text file (windows.ts). -->
+<!-- The body keeps the file's line breaks, wraps long lines and breaks words
+     wider than the window by its own style, not a site's CSS; white-space and
+     overflow-wrap inherit through the paragraph's shadow tree. The stack fills
+     the width so lines wrap at the window edge. The inset is the stack's pad
+     because a window body has none. 440 × 320 fits about 70 characters of the
+     body face per line. -->
+<vf-window
+  data-window="text"
+  heading="untitled"
+  closable
+  movable
+  outline-drag
+  resizable
+  zoomable
+  scrollbars="vertical"
+  width="440"
+  height="320"
+>
+  <vf-stack fill-width pad="4 6">
+    <vf-paragraph
+      fill-width
+      class="text-body"
+      style="white-space: pre-wrap; overflow-wrap: anywhere"
+    ></vf-paragraph>
+  </vf-stack>
+</vf-window>

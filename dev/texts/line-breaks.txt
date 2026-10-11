@@ -1,0 +1,13 @@
+Every line break is kept, as the file has it.
+This line follows straight on,
+and so does this one.
+
+Above, a blank line. Below, a paragraph long enough to wrap: the Text Viewer adds a break of its own only where a line meets the window's edge, so a narrower window wraps it again and a wider one gives the words back to the line they came from.
+
+    Leading spaces are kept too,
+        as deep as the file sets them.
+
+A run with no break in it is broken wherever the window's edge falls:
+https://github.com/aportilla/text-viewer-app/blob/main/src/windows.html?a-long-query-with-no-spaces-in-it=so-it-has-to-break-somewhere-mid-word
+
+The end.
