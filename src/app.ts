@@ -6,7 +6,7 @@
 export const APP = {
   id: 'text-viewer',
   name: 'Text Viewer',
-  version: '0.2.0',
+  version: '0.3.0',
   author: 'Adam Portilla',
   description: 'The read-me application: each text file in a window of its own, read-only, its line breaks kept.',
 } as const

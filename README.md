@@ -12,9 +12,9 @@ The Text Viewer is built on the published
 [**vintage-frames**](https://www.npmjs.com/package/vintage-frames): the SDK's
 shell runs it over the kit's elements. Its release is its app file,
 `Text Viewer.png`: a PNG whose picture is the Text Viewer's box and whose
-chunks carry its manifest, its icon and its code. SystemOnline keeps app
-files in its `apps/` and builds them in, so a release is that file copied
-over. Nothing is published to npm.
+chunks carry its manifest, its icon and its code. A release is that file,
+signed and published to SystemOnline's index of app files, which SystemOnline
+installs it from. Nothing is published to npm.
 
 ```sh
 npm install
@@ -28,10 +28,10 @@ npm run dev        # http://localhost:5173/
 | `npm test` | unit tests for the viewer's pure logic (`node --test`) |
 | `npm run typecheck` | `tsc` over the viewer, the dev desktop and the Vite config |
 
-The dev desktop's text files are Read Me, a built-in whose words the dev
-desktop hands over as a site does; Line Breaks, with words of its own; and
-Missing Text, a built-in the dev desktop doesn't ship, which can't be opened.
-It starts over at each reload. `?save=1` keeps its catalog in IndexedDB and
+The dev desktop's text files are Read Me, a system document whose words the
+dev server serves at its path, as a site serves its own; Line Breaks, with
+words of its own; and Missing Text, a path the dev desktop doesn't serve,
+which can't be opened. It starts over at each reload. `?save=1` keeps its catalog in IndexedDB and
 its session in localStorage, so the open windows outlast a reload.
 
 The packer, the box and its frame are the SDK's: `vite.config.ts` is one
@@ -42,24 +42,29 @@ own.
 
 ## On a site
 
-A site builds the Text Viewer in from its app file, as it does any other
-(the SDK's
-[`docs/GUIDE.md`](https://github.com/aportilla/system-online-sdk/blob/main/docs/GUIDE.md)
-§ Applications from app files), and hands it the texts it ships:
+A site installs the Text Viewer from its app file, as it does any other (the
+SDK's
+[`docs/GUIDE.md`](https://github.com/aportilla/system-online-sdk/blob/main/docs/GUIDE.md)),
+and hands it nothing. It opens the catalog's text files, kind `text`. A text
+file's `data` is one of two:
+
+- `{ text }`: its own words, a visitor's.
+- `{ path }`: a system document, a text the site ships, such as a Read Me,
+  whose words are always the site's. The path is on the page's own origin
+  (`/texts/read-me.txt`), served where the site likes, and the Text Viewer
+  fetches it at each open, revalidating, so a deploy's edit shows at the
+  next. A path on another origin opens nothing. A path the site no longer
+  serves says its text is no longer part of this desktop, and a document
+  it can't reach, offline say, that it can't be read now. It weighs nothing
+  in the Trash.
 
 ```ts
-import textViewer from '../apps/Text Viewer.png?app'
-// (key) => the words of a text the site ships, or null
-import { builtinText } from './texts/index.ts'
-
-createShell(desktop, { apps: [finder({ storage, art }), textViewer({ builtinText })] })
+await catalog.create({ kind: 'text', name: 'Read Me', data: { path: '/texts/read-me.txt' } })
 ```
 
-It opens the catalog's text files, kind `text`. A text file's `data` carries
-its own words, `{ text }`, or names a text the site ships, `{ builtin: key }`,
-whose words are always the site's: `builtinText(key)` gives them, or `null`
-for a key the site doesn't ship, and opening that file says it can't be
-opened. Without `builtinText`, every built-in is one of those.
+Before 0.3.0 a site handed the Text Viewer its texts, `textViewer({
+builtinText })`, and a text file named one by its key, `{ builtin }`. A key
+opens nothing now: a site moving to 0.3.0 rewrites each to its path.
 
 ## Layout
 
@@ -69,7 +74,7 @@ dev/art/                  the dev desktop's Finder art, borrowed from SystemOnli
 dev/texts/                the dev desktop's text files
 src/app.ts                the Text Viewer's id, name, version, author and description: the manifest's source
 src/index.ts              the application: its definition, its kind and its factory, the default export
-src/text-file.ts          a text file: its kind, and its words, its own or a built-in's
+src/text-file.ts          a text file: its kind, where its words are, and what a document's response means
 src/layout.ts             a text window's zoomed box, the reading column
 src/windows.html          a text window's markup
 src/windows.ts            a text window's title and body, and the selection Copy and Select All act on

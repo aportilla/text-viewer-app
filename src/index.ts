@@ -3,8 +3,8 @@
 // menus. The window manager places a window, opens it out of its icon and
 // closes it back into it, retitles or closes it as its file is renamed or
 // removed, and runs its zoom box, which toggles a reading column (layout.ts).
-// A built-in's words are the site's, handed in as the factory's `builtinText`;
-// without it, a built-in can't be opened.
+// A system document's words are the site's, fetched from its path at each
+// open, so a deploy's edit shows at the next.
 
 import { VfWindow } from 'vintage-frames'
 import type { VfViewportBox } from 'vintage-frames'
@@ -17,30 +17,41 @@ import icon from './art/text-viewer.png'
 import textArt from './art/text-file.png'
 import alertArt from './art/alert.png'
 import { APP } from './app.ts'
-import { TEXT, textOf } from './text-file.ts'
-import type { BuiltinText } from './text-file.ts'
+import { TEXT, faultOf, sourceOf } from './text-file.ts'
+import type { Fault } from './text-file.ts'
 import { ask } from './dialogs.ts'
 import { bodyOf, selectContents, selectedTextIn, textWindow } from './windows.ts'
 import { expandedTextBox } from './layout.ts'
 
 export const TEXT_VIEWER = APP.id
 
-/** What a site hands the Text Viewer. */
-export interface TextViewerOptions {
-  /** A built-in's words by its key: the texts the site ships, which a text
-   *  file names rather than carries. Null for a key it doesn't ship. */
-  builtinText?: BuiltinText
-}
-
 export interface TextViewerActions {
-  /** Open a text file's window, or bring it forward. The boot reopens the
-   *  last session's windows through it. */
-  open(target: { item?: string | null; from?: VfViewportBox | null }): void
+  /** Open a text file's window, or bring it forward. Resolves once it's open,
+   *  or has said why not. The boot reopens the last session's windows through
+   *  it, in order. */
+  open(target: { item?: string | null; from?: VfViewportBox | null }): Promise<void>
 }
 
-export function textViewer({ builtinText = () => null }: TextViewerOptions = {}): AppDefinition<TextViewerActions> {
+/** What each fault says, after the file's name. */
+const SAYS: Record<Fault, string> = {
+  gone: 'can’t be opened: its text is no longer part of this desktop.',
+  unreachable: 'can’t be read now: its text couldn’t be reached. Try again in a moment.',
+}
+
+/** A system document's words, revalidated against the site, or why there are none. */
+async function fetchWords(url: string): Promise<{ text: string } | { fault: Fault }> {
+  try {
+    const res = await fetch(url, { cache: 'no-cache' })
+    const fault = faultOf(res.status, res.headers.get('content-type'))
+    return fault ? { fault } : { text: await res.text() }
+  } catch {
+    return { fault: 'unreachable' }
+  }
+}
+
+export function textViewer(): AppDefinition<TextViewerActions> {
   /** Opens a text file's window out of `from`; init sets it. */
-  let openText = (_item: Item, _from: VfViewportBox | null): void => {}
+  let openText = async (_item: Item, _from: VfViewportBox | null): Promise<void> => {}
 
   return defineApp<TextViewerActions>({
     id: TEXT_VIEWER,
@@ -52,8 +63,12 @@ export function textViewer({ builtinText = () => null }: TextViewerOptions = {})
     kinds: {
       [TEXT]: {
         art: textArt,
-        open: (item, from) => openText(item, from),
-        size: (item) => new TextEncoder().encode(textOf(item, builtinText) ?? '').byteLength,
+        open: (item, from) => void openText(item, from),
+        // A system document weighs nothing: its words are the system's.
+        size: (item) => {
+          const source = sourceOf(item, location.href)
+          return source && 'text' in source ? new TextEncoder().encode(source.text).byteLength : 0
+        },
       },
     },
     init(ctx) {
@@ -63,12 +78,8 @@ export function textViewer({ builtinText = () => null }: TextViewerOptions = {})
       // can't name an imported file.
       alert.querySelector('img')!.src = alertArt
 
-      openText = (item, from) => {
-        const text = textOf(item, builtinText)
-        if (text == null) {
-          void ask(ctx, alert, `“${item.name}” can’t be opened: its text is no longer part of this desktop.`)
-          return
-        }
+      /** Opens a text file's window with `text`, or brings its window forward. */
+      const show = (item: Item, from: VfViewportBox | null, text: string): void => {
         windows.open({
           app: TEXT_VIEWER,
           item: item.id,
@@ -76,6 +87,19 @@ export function textViewer({ builtinText = () => null }: TextViewerOptions = {})
           create: () => textWindow(ctx.window('text'), item.name, text),
           zoom: expandedTextBox,
         })
+      }
+      // Not awaited: the boot's reopen goes on while the alert waits.
+      const say = (item: Item, fault: Fault): void => void ask(ctx, alert, `“${item.name}” ${SAYS[fault]}`)
+
+      openText = async (item, from) => {
+        const source = sourceOf(item, location.href)
+        if (source == null) return say(item, 'gone')
+        if ('text' in source) return show(item, from, source.text)
+        // An open window keeps the words it opened with: no fetch to bring it forward.
+        if (windows.windowFor(item.id)) return show(item, from, '')
+        const words = await fetchWords(source.url)
+        if ('fault' in words) say(item, words.fault)
+        else show(item, from, words.text)
       }
 
       /** The active window, when it is a text window. */
@@ -99,9 +123,9 @@ export function textViewer({ builtinText = () => null }: TextViewerOptions = {})
       ctx.gate(ctx.item('arrange'), () => !windows.arranged())
 
       return {
-        open({ item, from = null }) {
+        async open({ item, from = null }) {
           const it = ctx.catalog?.item(item)
-          if (it?.kind === TEXT) openText(it, from)
+          if (it?.kind === TEXT) await openText(it, from)
         },
       }
     },

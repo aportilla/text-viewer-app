@@ -3,13 +3,14 @@
 The read-me application, an application for SystemOnline (the sibling
 `system-online` repo). It runs on `system-online-sdk`'s shell over the
 `vintage-frames` kit's elements, both sibling repos too. It ships as one
-file, its app file `Text Viewer.png`, which SystemOnline builds in from its
-`apps/`; it came out of SystemOnline's `src/apps/text-viewer/`, the third
-application to leave, after Meteors and Desktop Patterns (the sibling
+file, its app file `Text Viewer.png`, published signed to SystemOnline's
+index (the sibling `system-online-app-index`), whose copy SystemOnline keeps
+in its `apps/`; it came out of SystemOnline's `src/apps/text-viewer/`, the
+third application to leave, after Meteors and Desktop Patterns (the sibling
 `meteors-app` and `desktop-patterns-app`, the models for this repo).
 SystemOnline's `docs/app-packages-plan.md` held it back while its kind and
 its texts were SystemOnline's alone: the `text` kind is Sprite Machine's as
-well, and a site's built-in texts come in through the factory (below). The
+well, and a site serves its own system documents at their paths (below). The
 SDK writes the file: its `system-online-sdk/build` entry holds the frame, the
 packer and the `appFile()` Vite plugin, so this repo carries neither frame
 nor packer. The SDK's docs (`../system-online-sdk/docs/`) are the guides:
@@ -21,8 +22,8 @@ nor packer. The SDK's docs (`../system-online-sdk/docs/`) are the guides:
 - `npm run dev` — the dev desktop (`index.html`, `dev/main.ts`); `?save=1`
   keeps its catalog and session across a reload
 - `npm run build` — the app file, `dist/Text Viewer.png`, through the SDK's
-  `appFile()` (`vite.config.ts`). The release is that file, copied into
-  SystemOnline's `apps/`
+  `appFile()` (`vite.config.ts`). The release is that file, published with
+  system-online-app-index's `npm run add`
 - The gates: `npm test`, `npm run typecheck`, `npm run build`. CI runs all
   three on every push and pull request.
 
@@ -30,8 +31,8 @@ nor packer. The SDK's docs (`../system-online-sdk/docs/`) are the guides:
 
 Unit tests only, and only for pure logic (`test/*.test.mjs`, run by
 `node --test`, importing the TypeScript source through Node's type
-stripping): a text file's words (`text-file.ts`) and the zoomed box
-(`layout.ts`). No browser tests, and nothing that asserts markup, copy,
+stripping): where a text file's words are, and what a system document's
+response means (`text-file.ts`), and the zoomed box (`layout.ts`). No browser tests, and nothing that asserts markup, copy,
 constants or what the kit or the SDK renders: the look and the wiring are
 checked by eye, on the dev desktop. A module under test imports no DOM,
 nothing of either package but `system-online-sdk/pure`, and no `?raw`, and
@@ -56,17 +57,24 @@ the SDK, so:
 - **No session keys of its own.** The session keeps its windows by their
   items. A key it adds carries its id (`text-viewer-…`), is read back
   defensively, and nothing breaks when `ctx.state` is null.
-- **Nothing site-specific through the context**: no `ctx.services`, and no
-  `ctx.apps`. What a site ships, its built-in texts, comes in through the
-  factory's one option, `builtinText`: a site builds the Text Viewer in as
-  `textViewer({ builtinText })`. Without it a built-in can't be opened, and
-  the rest works on any site.
+- **Nothing site-specific**: no `ctx.services`, no `ctx.apps`, and no
+  options to its factory, since an installed application is handed nothing.
+  What a site ships, its system documents (a Read Me), it serves at paths on
+  its own origin, where it likes, and a text file holds the path.
 - **Its kind is `text`**, the one exception to naming its kinds after its
   id: every text file on SystemOnline's and Sprite Machine's desktops
   carries it, and an item's kind can't be changed in place. A text file's
-  `data` is `{ text }`, its own words, or `{ builtin }`, a key whose words
-  `builtinText` gives (`text-file.ts`). A site registers no other `text`
-  kind, and a kind the Text Viewer adds is named after its id.
+  `data` is `{ text }`, its own words, or `{ path }`, a system document's
+  (`text-file.ts`). A site registers no other `text` kind, and a kind the
+  Text Viewer adds is named after its id.
+- **A system document is fetched at each open**, revalidating, so a site's
+  deploy shows at the next. Its path opens only on the page's origin, so a
+  document can't send the viewer elsewhere. A 404, a 410 or a page (a host's
+  fallback to its index) says its text is no longer part of this desktop;
+  any other failure, offline say, that it can't be read now. It weighs
+  nothing in Empty Trash's count. `{ builtin }`, a key whose words a site
+  once handed the factory, retired with 0.3.0 and opens nothing: a site
+  rewrites its keys to paths.
 - **It opens from its documents.** A text file's icon, or an alias of one,
   opens the file's window through the kind's `open`, and the boot reopens
   windows through the `open` action. Its own icon is for the box and for a
@@ -84,7 +92,8 @@ the SDK, so:
   `GUIDE.md` § Moving to a new release has the steps.
 
 `dev/` is the dev desktop's alone and never goes into the app file; it may
-borrow SystemOnline's art. Its texts (`dev/texts/`) are its own.
+borrow SystemOnline's art. Its texts (`dev/texts/`) are its own; Read Me is
+a system document there, which the dev server serves at its path.
 
 ## Invariants — don't break, don't re-litigate
 

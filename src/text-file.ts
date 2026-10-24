@@ -1,6 +1,7 @@
-// A text file: the catalog kind the Text Viewer opens, and its words (pure). A
-// text file keeps little in its item's `data`: its own words, or the key of a
-// built-in, a text the site ships, whose words are always the site's.
+// A text file: the catalog kind the Text Viewer opens, and where its words are
+// (pure). A text file keeps little in its item's `data`: its own words, or the
+// path of a system document, a text the site serves, whose words are always
+// the site's.
 
 import type { Item } from 'system-online-sdk/pure'
 
@@ -11,21 +12,54 @@ import type { Item } from 'system-online-sdk/pure'
  */
 export const TEXT = 'text'
 
-/** A text file's data: the key of a built-in, or its own words. */
+/** A text file's data: a system document's path, or its own words. */
 export interface TextData {
-  builtin?: string
+  path?: string
   text?: string
 }
 
-/** A built-in's words by its key, or null for a key the site doesn't ship. */
-export type BuiltinText = (key: string) => string | null
+/**
+ * Where a text file's words are: its own, or a system document's, at `url` on
+ * the page's origin. Null for words it can't open.
+ */
+export type TextSource = { text: string } | { url: string } | null
 
 /**
- * A text file's words: a built-in's from `builtinText`, else its own, '' when
- * it has none. Null for a built-in `builtinText` doesn't give.
+ * A text file's source, `page` the page's address. A path is resolved against
+ * the page and opens only on its origin, so a document can't send the Text
+ * Viewer elsewhere. A key of a built-in, from before system documents had
+ * paths, opens nothing, and neither does a path off the origin. Otherwise its
+ * own words, '' when it has none.
  */
-export function textOf(item: Item, builtinText: BuiltinText): string | null {
-  const d = (item.data ?? {}) as TextData
-  if (typeof d.builtin === 'string' && d.builtin) return builtinText(d.builtin)
-  return typeof d.text === 'string' ? d.text : ''
+export function sourceOf(item: Item, page: string): TextSource {
+  const d = (item.data ?? {}) as TextData & { builtin?: unknown }
+  if (typeof d.path === 'string' && d.path) return onPage(d.path, page)
+  if (typeof d.builtin === 'string' && d.builtin) return null
+  return { text: typeof d.text === 'string' ? d.text : '' }
+}
+
+function onPage(path: string, page: string): TextSource {
+  try {
+    const base = new URL(page)
+    const url = new URL(path, base)
+    // The protocol too: a blob: URL carries its creator's origin.
+    return url.origin === base.origin && url.protocol === base.protocol ? { url: url.href } : null
+  } catch {
+    return null
+  }
+}
+
+/** Why a system document's fetch gave no words: no longer served, or not now. */
+export type Fault = 'gone' | 'unreachable'
+
+/**
+ * What a system document's response means: null for its words, else why there
+ * are none. A 404 or 410 is a path the site no longer serves, and so is a
+ * page, since a host that falls back to its index answers any path with it.
+ * Anything else not ok can't be read now.
+ */
+export function faultOf(status: number, type: string | null): Fault | null {
+  if (status === 404 || status === 410) return 'gone'
+  if (status < 200 || status > 299) return 'unreachable'
+  return type != null && /^\s*text\/html\b/i.test(type) ? 'gone' : null
 }

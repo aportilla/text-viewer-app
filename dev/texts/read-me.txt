@@ -4,13 +4,13 @@ This is the Text Viewer's dev desktop: the SDK's Finder, and the Text Viewer fro
 THE TEXT FILES
 
   READ ME
-  This file. Its words aren't in the file: it names a built-in by its key, and the dev desktop hands the Text Viewer its built-in texts (dev/texts/) as a site hands it its own.
+  This file, a system document. Its words aren't in the file: it holds their path, /dev/texts/read-me.txt, and the Text Viewer fetches them from the dev server at each open, as it does a site's. Edit this file, close its window and open it again, and the edit shows.
 
   LINE BREAKS
   A text file with words of its own: its line breaks kept, its long lines wrapped at the window, and a run too long for any line broken where the window's edge falls.
 
   MISSING TEXT
-  A built-in the dev desktop doesn't ship. Opening it says it can't be opened.
+  A path the dev desktop doesn't serve. Opening it says its text is no longer part of this desktop.
 
 ––––––––––––––––––––––––––––––––––
 WHAT TO TRY
@@ -23,7 +23,9 @@ Select some text and choose Edit → Copy, ⌘C. Copy is greyed until a text win
 
 File → Quit, ⌃Q, closes every text window, as an Option-click on a close box does.
 
-Rename a text file and its window's title follows. Drag it to the Trash and choose Special → Empty Trash…, and its window closes.
+Rename a text file and its window's title follows. Drag it to the Trash and choose Special → Empty Trash…, and its window closes. Read Me weighs nothing in the Trash's count: its words are the system's.
+
+Stop the dev server and open Read Me: it says it can't be read now.
 
 View → Arrange Windows, ⌘J, puts the windows back where they open.
 
